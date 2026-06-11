@@ -1,0 +1,97 @@
+
+%=== File containing Global Configuration of the report ===%
+%                                                          %
+% Copyright (C) ISI - All Rights Reserved                  %
+% Proprietary                                              %
+% Written by Med Hossam <med.hossam@gmail.com>, April 2016 %
+%                                                          %
+% @author: HEDHILI Med Houssemeddine                       %
+% @linkedin: http://tn.linkedin.com/in/medhossam           %
+%==========================================================%
+
+%=========== You MUST type your information here ==========%
+% global_config.tex file is designed to configure your     %
+% cover pages (main, back and black covers)                %
+%==========================================================%
+
+%============= Config new columns type ==============%
+\newcolumntype{L}{>{\raggedright\arraybackslash}}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}}
+\newcolumntype{C}{>{\centering\arraybackslash}}
+%==================================================%
+
+%========= Config the cover section ==========%
+
+\title{Comparative assessment of hardware accelaration on the Edge AI }
+
+\author{Walid Ben Abi Taieb}
+%%% if necessary
+% Set isBinomal to true and type second author name
+%\setboolean{isBinomal}{true}
+%\secondAuthor{Prénom NOM}
+
+\diplomaName{National Diploma of Engineering in Applied Science Technology}
+\speciality{Embedded Systems and Connected Objects}
+%\speciality{Génie des Télécommunications et Réseaux}
+%\speciality{Génie Informatique des Systèmes Industriels}
+
+%% Encadrant professionnel
+\proFramerName{Mr. Enrico Mezzetti }
+\proFramerSpeciality{}
+
+%% Encadrant académique
+\academicFramerName{Mrs. Mariem Feki}
+\academicFramerSpeciality{}
+
+%% Entreprise d'accueil
+\companyName{Barcelona supercomputing center }
+
+%% Année universitaire
+\collegeYear{2025 - 2026}
+
+%%%%%% Signatures section %%%%%%
+
+% You can simply remove theses sentences by typing an empty string
+% \proSignSentence{}
+
+\proSignSentence{I authorize the student to submit their internship report for validation.}
+
+\academicSignSentence{I authorize the student to submit their internship report for validation.}
+
+%%% AR
+\arabicAbstract{يوضع الملخص باللغة العربية هنا... يوضع الملخص باللغة العربية هنا... يوضع الملخص باللغة العربية هنا... يوضع الملخص باللغة العربية هنا... يوضع الملخص باللغة العربية هنا... الرجاء أن يكون في حدود العشر أسطر... يوضع الملخص باللغة العربية هنا... الرجاء أن يكون في حدود العشر أسطر... يوضع الملخص باللغة العربية هنا... الرجاء أن يكون في حدود العشر أسطر... يوضع الملخص باللغة العربية هنا... الرجاء أن يكون في حدود العشر أسطر... يوضع الملخص باللغة العربية هنا... الرجاء أن يكون في حدود العشر أسطر... يوضع الملخص باللغة العربية هنا... الرجاء أن يكون في حدود العشر أسطر... يوضع الملخص باللغة العربية هنا... الرجاء أن يكون في حدود العشر أسطر... يمكنك أن تكتب كلمات بحروف لاتينية في وسط الملخص مثال \textLR{Exemple ici} يوضع الملخص باللغة العربية هنا...}
+
+\arabicAbstractKeywords{الرجاء عدم تجاوز الخمس كلمات}
+
+%% To use latin characters inside the arabic text
+% just put them inside the command \textLR{}
+%%%%
+
+%%% FR
+\frenchAbstract{Mettez le resumé en français ici... Mettez le resumé en français ici... Mettez le resumé en français ici... Mettez le resumé en français ici... Merci de ne pas dépasser les dix lignes. Mettez le resumé en français ici, merci de ne pas dépasser les dix lignes. Mettez le resumé en français ici, merci de ne pas dépasser les dix lignes. Mettez le resumé en français ici, merci de ne pas dépasser les dix lignes. Mettez le resumé en français ici, merci de ne pas dépasser les dix lignes. Mettez le resumé en français ici, merci de ne pas dépasser les dix lignes. Mettez le resumé en français ici, merci de ne pas dépasser les dix lignes. Mettez le resumé en français ici, merci de ne pas dépasser les dix lignes. Mettez le resumé en français ici, merci de ne pas dépasser les dix lignes.}
+
+\frenchAbstractKeywords{Merci de ne pas dépasser les cinq mots}
+
+%%% EN
+\englishAbstract{Put the English abstract here, put the English abstract here, put the English abstract here, put the English abstract here, put the English abstract here, put the English abstract here... Please don't exceed ten lines, Please don't exceed ten lines, Please don't exceed ten lines, Please don't exceed ten lines. Put the English abstract here, please don't exceed ten lines. Put the English abstract here, please don't exceed ten lines. Put the English abstract here, please don't exceed ten lines. Put the English abstract here, please don't exceed ten lines. Put the English abstract here, please don't exceed ten lines. Put the English abstract here, please don't exceed ten lines. Put the English abstract here, please don't exceed ten lines. Put the English abstract here, please don't exceed ten lines.}
+
+\englishAbstractKeywords{Please don't use more than five keywords}
+
+%% if you want to get rid of the company address just set the boolean variable to false
+% PS : it's optional
+\setboolean{wantToTypeCompanyAddress}{true}
+
+\companyEmail{info@bsc.es}
+\companyTel{+34.93.413.77.20 }
+\companyAddressFR{C/Jordi Girona, 29. Nexus II Building. Office 219. 08034 Barcelona}
+
+
+% --- Override language to English ---
+\AtBeginDocument{%
+  \selectlanguage{english}%
+}
+% Fix mini table of contents title (originally set to French "Plan")
+\mtcsettitle{minitoc}{Contents}
+% Change table/figure caption names from "Tableau"/"Figure"
+\captionsetup[table]{name=Table}
+\captionsetup[figure]{name=Figure}
