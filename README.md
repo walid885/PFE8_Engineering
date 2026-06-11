@@ -8,4 +8,7 @@ having also branches for back up.  + back up in google drive.
 
 due to the github sync is an "advanced feature, the different files and the structure is going to be done here ", so , I will make the "qdvqnceed feature" , not so adnaced. 
 
-I even can make a python dscript that will do it for me 
+I even can make a python dscript that will do it for me 6
+
+
+this is the initial draft, of the intial chapter
