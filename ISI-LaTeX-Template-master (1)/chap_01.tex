@@ -1,0 +1,85 @@
+\chapter{General context of the project}
+
+% Figure: BSC CNS logo
+
+\section*{Introduction}
+This introductory chapter presents the host organization and its diverse areas of activity. It then formulates the problem statement and outlines the proposed solution. Finally, the chapter describes the project methodology and provides insights into the adopted approach.
+
+\section{Host organisation }
+Within this section, we are going to introduce the host orgnisation and hirearhcy of it, as well, introduce the research lab where this internship took place. 
+
+\subsection{Barcelona super computing center }
+The Barcelona Supercomputing Center (BSC-CNS) is Spain's national supercomputing facility, located in Barcelona. It hosts MareNostrum, one of the most powerful supercomputers in Europe, and serves as a leading research centre in high performance computing (HPC), computer sciences, and computational engineering. BSC-CNS is a member of the Partnership for Advanced Computing in Europe (PRACE) and actively contributes to European research initiatives. Its mission includes providing HPC resources, developing advanced software and tools, and fostering technology transfer to both industry and academia. Figure \ref{fig:bsc_cns_logo} shows the official logo of BSC-CNS.
+
+The centre is organised into several departments, among which the Computer Sciences (CS) department and the Earth Sciences department are particularly prominent. The work presented in this report was carried out within the \textbf{High Performance and Embedded Systems Laboratory (HPES)}, which belongs to the Computer Sciences department of BSC-CNS.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.25\textwidth]{img/Logo_Entreprise.jpg}
+    \caption{Logo of the Barcelona Supercomputing Center.}
+    \label{fig:bsc_cns_logo}
+\end{figure}
+
+\subsection{High Performance and Embedded Systems Laboratory (HPES)}
+The High Performance and Embedded Systems Laboratory (HPES) at BSC-CNS focuses on the design, analysis, and optimisation of computing systems ranging from large scale parallel machines to embedded real time devices. Key research areas include:
+\begin{itemize}
+    \item Parallel programming models and runtime systems.
+    \item Performance analysis and tuning for HPC applications.
+    \item Energy efficient and embedded architectures.
+    \item Fault tolerance and reliability in extreme scale systems.
+\end{itemize}
+HPES brings together experts in computer architecture, compilers, operating systems, and application development. The laboratory collaborates on European projects (e.g., EPI, EuroHPC) and with industrial partners to transfer its innovations into practice. Figure \ref{fig:hpes_logo} presents the HPES lab logo.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.2\textwidth]{img/hpes-logo.jpeg}
+    \caption{Logo of the High Performance and Embedded Systems Laboratory (HPES).}
+    \label{fig:hpes_logo}
+\end{figure}
+
+The present work was conducted within the \textbf{SODES} group of HPES, which specialises in the design and optimisation of embedded systems for edge computing and autonomous devices.
+
+\section{Problem statement}
+The rapid proliferation of intelligent edge devices—from autonomous robots and drones to smart cameras and industrial sensors—has created an unprecedented demand for on-device artificial intelligence (Edge AI). Unlike cloud-based AI, Edge AI requires low latency, bandwidth efficiency, data privacy, and energy autonomy. These constraints push computational tasks away from centralised data centres towards resource constrained embedded platforms.
+
+\subsection{The computational bottleneck of Edge AI}
+Modern AI models, particularly deep neural networks (DNNs), are computationally intensive. Running them on general purpose CPUs leads to excessive inference times and high energy consumption, often violating real time requirements. While GPUs offer high throughput, their power profile (typically tens to hundreds of watts) makes them unsuitable for battery powered or passively cooled edge devices.
+
+\subsection{Hardware acceleration as the key enabler}
+To address this gap, system on chip (SoC) vendors have begun integrating dedicated Neural Processing Units (NPUs) which are specialised accelerators designed to execute tensor operations, convolutions, and activation functions with extreme efficiency. An NPU can deliver 10 to 100 times better performance per watt than a CPU for typical DNN workloads. Examples include the Ethos U series from Arm, the NPU inside the Rockchip RK3588, and the Neural Engine in Apple’s A series chips.
+
+\subsection{The configuration challenge}
+However, leveraging an NPU is not a matter of simple integration. Each NPU has unique constraints: tiling of tensors into a small local memory (scratchpad), data layout (NHWC vs. NCHW), quantisation schemes (int8, int16, or binary), and supported operations (e.g., depthwise convolutions, activations). Furthermore, the overall system performance depends on the interplay between the NPU, the CPU (for control and preprocessing), the memory hierarchy, and the communication bus.
+
+The core problem is therefore:
+
+\begin{center}
+    \textit{How can we determine the optimal configuration (operator partitioning, memory tiling, quantisation, and task scheduling) of a dedicated NPU based heterogeneous system to maximise the acceleration of Edge AI workloads compared to a CPU only baseline, while meeting real time and energy constraints?}
+\end{center}
+
+\subsection{Relevance to this work}
+Within the SODES group at HPES (BSC-CNS), this problem is particularly relevant. Our target embedded platform integrates a CPU cluster and a dedicated NPU. Without proper configuration, the NPU may be underutilised or even slower than a well optimised CPU implementation due to data transfer overhead or mismatched tensor layouts.
+
+This work aims to:
+\begin{itemize}
+    \item Characterise the performance gap between CPU only and NPU accelerated execution for representative Edge AI models (object detection, classification models, etc . . . ).
+    \item Develop a systematic methodology to explore the configuration space  and identify Pareto optimal configurations based on the different approaches and standards exisiting in this field such as The Benchmarking Standard: The MLPerf Tiny per exemple.
+    \item Implement and validate the configuration on real hardware, measuring end to end latency, energy, and throughput.
+\end{itemize}
+By solving this configuration problem, we enable practical Edge AI deployment that fully exploits the NPU’s potential, turning the promise of hardware acceleration into measurable system level gains.
+
+\section{Solution approach}
+The project follows a two stage implementation strategy. First, an initial implementation is carried out on top of the QEMU emulator. This allows us to evaluate the performance of the system across different simulated platforms and to develop a physical model that estimates the latency and throughput of CPU based inference. The emulation on an x86 host provides a controlled environment for early validation.
+
+Second, the emulation is ported to the real hardware platform. This step yields actual performance measurements under realistic operating conditions. Based on these measurements, various optimisation techniques for NPU inference latency are applied. The goal is to identify the configuration that achieves the optimal performance of which the platform is capable.
+
+\section{Presentation of the proposed solution}
+The proposed work is built upon successive implementations of the target system. Initially, we simulate the platform using the QEMU emulator. This first implementation serves two purposes: it provides a baseline for CPU based inference through physical emulation, and it enables the development of a performance model that computes the system state and estimates latency and throughput.
+
+Subsequently, we port the system to the actual embedded platform. Inference is executed on the real hardware, allowing a comparative analysis between the general purpose computing units (CPU) and the dedicated machine learning accelerator (NPU). The comparison focuses on inference latency, energy consumption, and throughput, thereby quantifying the benefits of NPU acceleration.
+
+\section{Work process and documentation}
+The project follows a structured workflow comprising requirement analysis, iterative development, experimental validation, and documentation. Each phase is documented in the corresponding chapters of this report. Version control is maintained using Git, and experimental results are logged systematically to ensure reproducibility. A detailed project schedule is provided in Appendix~A (if applicable).
+
+\section*{Conclusion}
+This chapter has presented the host organisation and the HPES laboratory, formulated the problem of NPU configuration for Edge AI, and described the proposed a  two-staged  solution approach. The next chapter will delve into the requirements analysis and specification for the project.

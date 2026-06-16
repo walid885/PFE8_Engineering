@@ -1,0 +1,207 @@
+\chapter{Requirements Analysis and Operating Environment}
+
+\section*{Introduction}
+In this chapter, we define the functional and non-functional requirements of our Edge AI benchmarking system, which aims to measure the performance gains of running ONNX model inference on the Vivante GC7000L NPU compared to the CPU on the NXP i.MX 8M Plus platform. We then present the system architecture, describing the interaction between the host PC, the target board, and the benchmarking pipeline components. System modeling is introduced with placeholders for diagrams to be finalized. Finally, we detail the hardware and software environment used throughout this project, from emulation to physical deployment.
+
+% =============================================================================
+\section{Requirements Analysis}
+Requirements analysis is a fundamental phase in any research and development project. It defines what the system must do and how it should perform under given constraints. In our context, the system is not a user-facing application but an automated benchmarking pipeline designed to evaluate and compare inference performance across different processing units on heterogeneous SoCs. This section covers both functional and non-functional requirements.
+
+% -----------------------------------------------------------------------------
+\subsection{Functional Requirements}
+A functional requirement defines the specific behaviors, functions, and capabilities the system must exhibit. For our benchmarking system, the functional requirements are organized into the following categories:
+
+\subsubsection*{Benchmark Execution}
+\begin{itemize}
+    \item \textbf{Inference on CPU:} The system must run ONNX model inference using the CPU execution provider of ONNX Runtime on the i.MX 8M Plus.
+    \item \textbf{Inference on NPU:} The system must run ONNX model inference using the VSI NPU execution provider, targeting the Vivante GC7000L NPU on the i.MX 8M Plus.
+    \item \textbf{Sequential execution:} The system must execute CPU and NPU benchmarks separately and sequentially to avoid resource contention and ensure clean measurements.
+    \item \textbf{Model support:} The system must support loading and executing deep learning models in ONNX format, including model variants such as MobileNet and YOLO.
+\end{itemize}
+
+\subsubsection*{Metrics Collection}
+\begin{itemize}
+    \item \textbf{Latency measurement:} The system must measure per-inference latency in milliseconds for each execution provider.
+    \item \textbf{Throughput measurement:} The system must measure throughput in inferences per second over a defined batch of runs.
+    \item \textbf{Thermal monitoring:} The system must collect temperature data from the SoC during benchmark execution to assess thermal behavior.
+    \item \textbf{PMU register access:} The system must read Performance Monitoring Unit (PMU) registers to extract low-level hardware performance counters (e.g., cycles, instructions, cache events) for deeper architectural insights.
+\end{itemize}
+
+\subsubsection*{Result Handling}
+\begin{itemize}
+    \item \textbf{JSON logging:} The system must store all collected metrics (latency, throughput, temperature, PMU counters) in structured JSON files for later processing.
+    \item \textbf{SCP transfer:} The system must allow transfer of result JSON files from the target board to the host PC via SCP for visualization and analysis.
+\end{itemize}
+
+\subsubsection*{Visualization and Analysis}
+\begin{itemize}
+    \item \textbf{Comparative visualization:} The host PC must provide scripts or tools to parse JSON results and generate comparative graphs (e.g., bar charts, line plots) showing CPU vs NPU performance.
+    \item \textbf{Comparative analysis:} The system must enable side-by-side analysis of latency, throughput, thermal, and PMU metrics across execution providers.
+\end{itemize}
+
+\subsubsection*{Automation}
+\begin{itemize}
+    \item \textbf{Shell-based pipeline:} The entire benchmarking workflow—from model loading to result storage—must be automated via shell scripts for sequential, reproducible execution.
+\end{itemize}
+
+% -----------------------------------------------------------------------------
+\subsection{Non-Functional Requirements}
+Non-functional requirements specify quality attributes and constraints that the system must satisfy. They are critical for ensuring the validity, reproducibility, and rigor of our benchmarking results.
+
+\begin{itemize}
+    \item \textbf{Accuracy trade-off analysis:} The system should allow comparison of inference accuracy across CPU and NPU execution providers to identify any accuracy degradation due to hardware-specific optimizations or quantization. Quantifying the accuracy-latency trade-off is a core objective.
+    
+    \item \textbf{Reproducibility:} All benchmark runs must be reproducible. This includes documenting compiler flags, runtime configurations, execution provider settings, model quantization parameters, and environmental conditions. The methodology should align with established benchmarking standards.
+    
+    \item \textbf{Adherence to standards:} The benchmarking methodology should follow the principles and best practices defined by:
+    \begin{itemize}
+        \item \textbf{MLPerf Tiny} \cite{ref:mlperf-tiny} — for standardized TinyML benchmarking workloads and measurement rules.
+        \item \textbf{EEMBC} \cite{ref:eembc} — for edge-focused benchmark guidelines (to be explored during the project).
+    \end{itemize}
+    
+    \item \textbf{Overhead measurement:} The system must measure and account for any instrumentation overhead, including the impact of PMU register sampling and thermal polling on inference timing.
+    
+    \item \textbf{Portability:} The benchmarking framework should be designed with portability in mind. While the primary target is the NXP i.MX 8M Plus, the pipeline should be adaptable to other heterogeneous SoCs if time permits.
+    
+    \item \textbf{Hardware constraint — INT8 Quantization:} The Vivante GC7000L NPU on the i.MX 8M Plus supports only INT8 quantized models. Consequently, all models deployed on the NPU execution provider must be quantized to INT8 precision. This hardware limitation is a central constraint of our system.
+\end{itemize}
+
+% =============================================================================
+\section{System Architecture}
+In this section, we present an abstraction of the system architecture, detailing the main modules and their interactions. Our system is composed of a host PC for development, automation, and visualization, and the NXP i.MX 8M Plus target board where benchmarks are executed. Communication between the two is handled via SCP. Figure~\ref{fig:system-architecture} presents an overview of this architecture.
+
+% TODO: Insert system architecture block diagram
+% \begin{figure}[htbp]
+%     \centering
+%     \includegraphics[width=\textwidth]{figures/system_architecture.png}
+%     \caption{System Architecture Overview}
+%     \label{fig:system-architecture}
+% \end{figure}
+
+\subsection{Host PC}
+The host PC runs Ubuntu Linux and serves three main purposes:
+\begin{itemize}
+    \item \textbf{Development environment:} Cross-compilation of ONNX Runtime with the VSI NPU backend, Yocto Linux image generation, and benchmarking script development.
+    \item \textbf{Automation control:} The PC initiates the benchmarking pipeline by triggering shell scripts on the target board (via SSH or serial connection) and retrieves results.
+    \item \textbf{Visualization:} Python-based scripts parse the JSON result files and generate comparative graphs and reports.
+\end{itemize}
+
+\subsection{Target Board — NXP i.MX 8M Plus}
+The i.MX 8M Plus is the core execution platform. It hosts the following components:
+\begin{itemize}
+    \item \textbf{ONNX Runtime:} The inference engine, compiled with two execution providers:
+    \begin{itemize}
+        \item \textbf{CPU Execution Provider:} Leverages the ARM Cortex-A cores for floating-point inference.
+        \item \textbf{VSI NPU Execution Provider:} Offloads INT8-quantized model inference to the Vivante GC7000L NPU.
+    \end{itemize}
+    \item \textbf{Benchmark Harness:} A set of shell scripts that automate the sequential execution of benchmarks, including warm-up runs, timed inference loops, and result collection.
+    \item \textbf{Metrics Collection Module:} A combination of tools and scripts responsible for:
+    \begin{itemize}
+        \item Reading PMU registers (via \texttt{perf} or custom kernel interfaces).
+        \item Polling thermal sensors.
+        \item Measuring inference latency and throughput.
+    \end{itemize}
+    \item \textbf{JSON Logger:} Serializes all collected metrics into structured JSON files stored locally on the board.
+    \item \textbf{Yocto Linux:} A custom-built lightweight Linux distribution tailored for the i.MX 8M Plus, providing the necessary kernel drivers for NPU and PMU access.
+\end{itemize}
+
+\subsection{QEMU Emulation Layer}
+During the initial phase of the project, a QEMU-based emulation environment was used to simulate the i.MX 8M Plus platform. This allowed early development and validation of the benchmarking pipeline before physical hardware was available. Mathematical models and scaling factors were developed to project emulated results toward expected physical hardware performance. The emulation methodology is detailed in Chapter~3.
+
+\subsection{Data Flow}
+The benchmarking data flow proceeds as follows:
+\begin{enumerate}
+    \item ONNX models are deployed to the i.MX 8M Plus filesystem.
+    \item The benchmark harness launches inference with a specified execution provider (CPU or NPU).
+    \item During inference, the metrics collection module samples PMU registers and thermal data.
+    \item Upon completion, latency, throughput, temperature, and PMU counter values are written to a JSON file.
+    \item JSON files are transferred from the target board to the host PC via SCP.
+    \item On the host PC, Python scripts parse the JSON files and generate comparative visualizations.
+\end{enumerate}
+
+% =============================================================================
+\section{System Modeling}
+% TODO: Discuss with professor to determine appropriate diagrams.
+% Options include:
+%   - Flowchart of the benchmarking pipeline
+%   - Sequence diagram showing interactions between Host PC, Benchmark Script, ONNX Runtime, CPU/NPU, PMU, and JSON Logger
+%   - Activity diagram of the benchmarking lifecycle
+
+% \subsection{Use Case Diagram}
+% \begin{figure}[htbp]
+%     \centering
+%     % \includegraphics[width=0.8\textwidth]{figures/use_case_diagram.png}
+%     \caption{Global Use Case Diagram}
+%     \label{fig:use-case}
+% \end{figure}
+
+% \subsection{Sequence Diagram}
+% \begin{figure}[htbp]
+%     \centering
+%     % \includegraphics[width=\textwidth]{figures/sequence_diagram.png}
+%     \caption{Benchmarking Sequence Diagram}
+%     \label{fig:sequence}
+% \end{figure}
+
+% \subsection{Activity Diagram}
+% \begin{figure}[htbp]
+%     \centering
+%     % \includegraphics[width=\textwidth]{figures/activity_diagram.png}
+%     \caption{Benchmarking Activity Diagram}
+%     \label{fig:activity}
+% \end{figure}
+
+% =============================================================================
+\section{Work Environment}
+This section details the hardware and software components constituting the work environment for this project. The environment spans two main phases: an initial emulation phase using QEMU and a subsequent deployment phase on the physical NXP i.MX 8M Plus hardware.
+
+\subsection{Hardware Environment}
+The hardware environment is composed of a host development PC and the target embedded platform.
+
+\subsubsection{Host PC}
+The host PC is a standard x86\_64 machine running Ubuntu Linux. It is used for cross-compilation, Yocto build orchestration, and result visualization. (Detailed specifications to be confirmed.)
+\begin{itemize}
+    \item \textbf{OS:} Ubuntu Linux (version: \textit{TBD})
+    \item \textbf{CPU:} \textit{TBD}
+    \item \textbf{RAM:} \textit{TBD}
+    \item \textbf{Storage:} \textit{TBD}
+\end{itemize}
+
+\subsubsection{Target Board — NXP i.MX 8M Plus}
+The NXP i.MX 8M Plus \cite{ref:imx8mplus} is a heterogeneous SoC designed for Edge AI applications. Its key components relevant to our project are:
+\begin{itemize}
+    \item \textbf{CPU:} Quad-core ARM Cortex-A53
+    \item \textbf{NPU:} Vivante GC7000L, supporting INT8 quantized inference
+    \item \textbf{GPU:} Vivante GC7000UL (not the primary focus of this study)
+    \item \textbf{RAM:} LPDDR4 (\textit{TBD} GB)
+    \item \textbf{Storage:} eMMC / SD card (\textit{TBD})
+    \item \textbf{Interfaces:} Gigabit Ethernet, USB, GPIO, UART
+\end{itemize}
+
+\subsubsection{Emulation Platform — QEMU}
+During the software emulation phase, QEMU was configured to emulate the ARM Cortex-A53 cores of the i.MX 8M Plus. This allowed early benchmarking pipeline development and performance projection via mathematical modeling.
+
+\subsection{Software Environment}
+The software stack is built around open-source tools and frameworks for embedded Linux, inference, and data analysis.
+
+\begin{itemize}
+    \item \textbf{Yocto Linux:} A custom Linux distribution built using the Yocto Project for the i.MX 8M Plus. It includes necessary kernel modules for NPU (Vivante driver stack) and PMU access.
+    \item \textbf{QEMU:} Used for full-system emulation of the target ARM64 architecture during the initial project phase.
+    \item \textbf{ONNX Runtime:} The primary inference engine, built from source for ARM64 with the VSI NPU execution provider enabled for NPU offloading.
+    \item \textbf{VSI NPU Backend:} The Vivante NPU driver and runtime stack enabling ONNX Runtime to offload INT8 inference to the GC7000L NPU.
+    \item \textbf{Python:} Used for host-side automation scripting, JSON parsing, and visualization.
+    \item \textbf{Shell/Bash:} Core scripting language for the benchmark harness and automation pipeline on the target board.
+    \item \textbf{Visualization Libraries:} (\textit{TBD} — Matplotlib, Plotly, or similar) for generating comparative graphs.
+    \item \textbf{Cross-compilation Toolchain:} ARM64 GCC toolchain (aarch64-none-linux-gnu) for building ONNX Runtime and other native components.
+    \item \textbf{PMU Tools:} Linux \texttt{perf} subsystem and/or custom kernel interfaces for accessing hardware performance counters.
+\end{itemize}
+
+% =============================================================================
+\section*{Conclusion}
+In this chapter, we defined the functional requirements of our Edge AI benchmarking system, focusing on the automated execution of ONNX model inference on CPU and NPU, comprehensive metrics collection (latency, throughput, thermal, PMU counters), JSON-based result logging, and comparative visualization. We also specified the non-functional requirements, emphasizing reproducibility, adherence to MLPerf Tiny and EEMBC standards, accuracy trade-off analysis, and the INT8 quantization constraint imposed by the Vivante GC7000L NPU.
+
+The system architecture was presented, detailing the host PC, the i.MX 8M Plus target board with its dual execution providers (CPU and VSI NPU), the QEMU emulation layer, and the data flow from benchmark execution to visualization. System modeling diagrams were reserved as placeholders pending discussion with the project supervisor.
+
+Finally, we detailed the hardware and software work environment, covering the host PC, the i.MX 8M Plus board, QEMU, and the full software stack from Yocto Linux to ONNX Runtime and visualization tools.
+
+In the next chapter, we will present the software emulation phase, detailing the QEMU setup, the mathematical models used for performance projection, and the initial benchmarking results obtained through emulation before transitioning to physical hardware.
